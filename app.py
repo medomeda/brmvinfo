@@ -65,16 +65,28 @@ def get_stocks_data():
     else:
         datemaj = ""
 
-    table = soup.find('table', {'class': 'ticky-enabled'})
-    tables = soup.find_all('table')
-    table = tables[3]  # Accéder à la quatrième table
+    # Cibler la section block-system-main pour récupérer la table des stocks
+    section = soup.find('section', id='block-system-main')
+    if section:
+        table = section.find('table', class_='table')
+    else:
+        table = None
 
     if table:
         rows = table.find_all('tr')[1:]  # Skip header row
         data = []
         for row in rows:
-            cols = [td.text.strip() for td in row.find_all('td')]
-            if len(cols) >= 6:
+            cols = []
+            for td in row.find_all('td'):
+                # Pour la variation, extraire le texte des spans
+                spans = td.find_all('span')
+                if spans:
+                    text = ' '.join(span.get_text(strip=True) for span in spans if span.get_text(strip=True))
+                else:
+                    text = td.get_text(strip=True)
+                cols.append(text)
+            
+            if len(cols) >= 7:
                 data.append({
                     'symbol': cols[0],
                     'nom': cols[1],
@@ -82,7 +94,7 @@ def get_stocks_data():
                     'coursveille': float(cols[3].replace(' ', '').replace(',', '.')) if cols[3] else 0.0,
                     'coursouverture': float(cols[4].replace(' ', '').replace(',', '.')) if cols[4] else 0.0,
                     'courscloture': float(cols[5].replace(' ', '').replace(',', '.')) if cols[5] else 0.0,
-                    'variation': float(cols[6].replace(',', '.')) if len(cols) > 6 and cols[6] else 0.0
+                    'variation': float(cols[6].replace(',', '.')) if cols[6] else 0.0
                 })
     else:
         data = []
