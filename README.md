@@ -11,7 +11,7 @@ Cette API Flask scrape les données des actions de la BRVM et les retourne au fo
 
 2. Lancez l'application :
    ```
-   python scraper.py
+   python app.py
    ```
 
 L'API sera disponible sur `http://localhost:5000/stocks`.
